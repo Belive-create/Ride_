@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sarathi Worker Portal · Gig & Expert Workspace</title>
+  <link rel="stylesheet" href="/css/cascade.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    .worker-app {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      flex: 1;
+    }
+    .worker-bar {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-hairline);
+      border-radius: 1rem;
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+    }
+    .card-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+    .task-job-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-hairline);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      transition: border-color 0.2s;
+    }
+    .task-job-card:hover {
+      border-color: var(--border-active);
+    }
+    .task-job-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .badge-tag {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      padding: 3px 10px;
+      border-radius: 9999px;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+    .badge-gig { background: rgba(6, 182, 212, 0.15); color: #06b6d4; border: 1px solid rgba(6, 182, 212, 0.3); }
+    .badge-expert { background: rgba(139, 92, 246, 0.15); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.3); }
+    .badge-escrow { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .payout-amt {
+      font-family: var(--font-mono);
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--brand-accent-bright);
+    }
+    /* Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+    .modal-backdrop.active { display: flex; }
+    .modal-card {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-hairline);
+      border-radius: 1.25rem;
+      width: 90%;
+      max-width: 500px;
+      padding: 1.75rem;
+    }
+    textarea, select {
+      width: 100%;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border-hairline);
+      color: #fff;
+      padding: 0.75rem;
+      border-radius: 0.5rem;
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      outline: none;
+      margin-top: 0.35rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sticky Header -->
+  <header class="site-header">
+    <div class="nav-container">
+      <a href="/" class="brand-logo">
+        <div class="logo-circle">⚡</div>
+        <span>Sarathi Worker Workspace</span>
+      </a>
+
+      <div class="header-actions">
+        <a href="/" class="btn btn-outline">Back to Landing Page</a>
+        <a href="https://t.me/SarathiAI_SIH_bot" target="_blank" class="btn btn-primary">Open Telegram Bot ↗</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Worker Application Workspace -->
+  <div class="worker-app">
+    <!-- Active Worker Profile Selector -->
+    <div class="worker-bar">
+      <div>
+        <div class="label-caps" style="color: var(--text-dim);">ACTIVE WORKER PROFILE:</div>
+        <div style="font-family: var(--font-heading); font-size: 1.25rem; font-weight: 700; margin-top: 2px;" id="worker-name-display">
+          Aarav Sharma (Bengaluru)
+        </div>
+        <div style="font-size: 0.85rem; color: var(--brand-accent-bright); font-family: var(--font-mono); margin-top: 2px;" id="worker-upi-display">
+          UPI ID: aarav.gig@okhdfc · Earnings: ₹1,820 · Rating: ⭐ 4.94
+        </div>
+      </div>
+
+      <div>
+        <label class="label-caps" style="display:block; margin-bottom:4px;">Switch Worker View:</label>
+        <select id="worker-select-dropdown" style="width: auto; padding: 0.5rem 1rem;">
+          <option value="w_1">Aarav Sharma (Gig Worker - Bangalore)</option>
+          <option value="w_2">Priya Patel (CA Inter - Delhi)</option>
+          <option value="w_3">Rohan Desai (App Tester - Pune)</option>
+          <option value="w_4">Shivam (Local Expert - Panipat)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Feed Header -->
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
+      <h2 style="font-family: var(--font-heading); font-size: 1.5rem;">
+        Escrow-Funded Job Feed (<span id="job-count">0</span>)
+      </h2>
+      <span class="label-caps" style="color: var(--brand-accent-bright);">
+        ● Live Syncing with Telegram
+      </span>
+    </div>
+
+    <!-- Job Cards List -->
+    <div class="card-grid" id="worker-job-list">
+      <!-- Loaded dynamically via JS -->
+    </div>
+  </div>
+
+  <!-- Submit Deliverable Modal -->
+  <div class="modal-backdrop" id="submit-modal">
+    <div class="modal-card">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
+        <h3 style="font-family: var(--font-heading); font-size: 1.25rem;">Submit Deliverable Proof</h3>
+        <button onclick="closeSubmitModal()" style="background:none; border:none; color:var(--text-dim); font-size:1.5rem; cursor:pointer;">&times;</button>
+      </div>
+
+      <form id="submit-form">
+        <input type="hidden" id="modal-task-id">
+        <div style="margin-bottom: 1rem;">
+          <label class="label-caps">Proof Type:</label>
+          <select id="modal-proof-type">
+            <option value="Phone Call & Vendor Confirmation">Phone Call & Vendor Confirmation</option>
+            <option value="On-Ground Photo Verification">On-Ground Photo Verification</option>
+            <option value="Device App Test Bug Log">Device App Test Bug Log</option>
+            <option value="CA/Legal Audit Summary">CA/Legal Audit Summary</option>
+          </select>
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+          <label class="label-caps">Deliverable Notes / Proof Details:</label>
+          <textarea id="modal-proof-text" rows="4" placeholder="Enter findings, store contact notes, price quoted, or verified information..." required></textarea>
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+          <label class="label-caps">Attach Proof Image (Optional):</label>
+          <input type="file" id="modal-proof-image" accept="image/*" style="display: block; width: 100%; padding: 0.5rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-hairline); border-radius: 0.5rem; margin-top: 0.35rem; color: #fff;">
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.8rem;">
+          Submit Work for AI Verification
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Ask User Modal -->
+  <div id="ask-modal" class="modal-overlay">
+    <div class="modal-content glass-card">
+      <h3 style="margin-bottom: 1rem;">Ask User a Question</h3>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">
+        Send a direct message to the user's Telegram to ask for missing details (address, preferences, etc.)
+      </p>
+      
+      <form id="ask-form">
+        <input type="hidden" id="ask-task-id">
+        <div style="margin-bottom: 1.5rem;">
+          <label class="label-caps">Your Question:</label>
+          <textarea id="ask-text" rows="3" placeholder="Hi! Could you please provide the exact address for the cleaning?" required></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.8rem;">
+          Send to User
+        </button>
+        <button type="button" class="btn" style="width: 100%; padding: 0.8rem; margin-top: 0.5rem; background: transparent; border: 1px solid var(--border-hairline);" onclick="closeAskModal()">
+          Cancel
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script src="/js/worker.js"></script>
+</body>
+</html>

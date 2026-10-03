@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ReLoop — AI Inventory Recovery & Material-Exchange Infrastructure</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              teal: '#14b8a6',
+              mint: '#10b981',
+              emerald: '#059669',
+              darkblue: '#060b11',
+              card: '#0d1622',
+              border: '#18283b'
+            }
+          },
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+            mono: ['Space Mono', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #060B11;
+      color: #F1F5F9;
+      overflow-x: hidden;
+    }
+    .font-mono {
+      font-family: 'Space Mono', monospace;
+    }
+    .grid-bg {
+      background-image: radial-gradient(rgba(20, 184, 166, 0.07) 1px, transparent 0);
+      background-size: 26px 26px;
+    }
+    .scan-line {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: #14b8a6;
+      box-shadow: 0 0 12px #14b8a6;
+      animation: scan 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    @keyframes scan {
+      0% { top: 0%; opacity: 0.8; }
+      50% { opacity: 1; }
+      100% { top: 96%; opacity: 0.8; }
+    }
+    .badge-pulse {
+      animation: pulse-ring 2s infinite;
+    }
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.05); opacity: 1; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #060B11;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #18283B;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #253A54;
+    }
+  </style>
+</head>
+<body class="grid-bg min-h-screen text-slate-100 selection:bg-teal-500 selection:text-slate-950 bg-[#060B11]">
+
+  <!-- TOP INDUSTRIAL LIVE TELEMETRY MARQUEE -->
+  <div class="bg-[#04080e] border-b border-[#18283b] text-xs font-mono py-1.5 px-4 sticky top-0 z-50 flex items-center justify-between overflow-x-auto whitespace-nowrap">
+    <div class="flex items-center space-x-6">
+      <div class="flex items-center space-x-2 text-teal-400">
+        <span class="w-2 h-2 rounded-full bg-teal-400 animate-ping"></span>
+        <span class="font-bold">NCR INDUSTRIAL HUB ACTIVE</span>
+      </div>
+      <div class="flex items-center space-x-2 text-slate-400">
+        <span>LME Aluminium 6063: <strong class="text-slate-200">₹198.50/kg</strong> <span class="text-teal-400">▲ +1.8%</span></span>
+      </div>
+      <div class="flex items-center space-x-2 text-slate-400">
+        <span>Copper Heavy Scrap: <strong class="text-slate-200">₹742.00/kg</strong> <span class="text-teal-400">▲ +0.9%</span></span>
+      </div>
+      <div class="flex items-center space-x-2 text-slate-400">
+        <span>Brass 316 Turning: <strong class="text-slate-200">₹485.00/kg</strong> <span class="text-slate-400">▼ -0.3%</span></span>
+      </div>
+      <div class="flex items-center space-x-2 text-slate-400">
+        <span>E-Waste Relay Stock: <strong class="text-slate-200">₹140.00/kg</strong> <span class="text-teal-400">▲ +3.1%</span></span>
+      </div>
+    </div>
+    <div class="flex items-center space-x-4 pl-6 border-l border-[#18283b] text-slate-400">
+      <span>Trapped Capital Index: <strong class="text-teal-400">₹18.4 Lakhs</strong></span>
+      <span>Buyers Active: <strong class="text-teal-400">48 Verified</strong></span>
+    </div>
+  </div>
+
+  <!-- NAVIGATION HEADER -->
+  <header class="border-b border-[#18283b] bg-[#09101a] sticky top-8 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      
+      <!-- Brand Logo -->
+      <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('dashboard')">
+        <div class="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center p-2 shadow-md shadow-emerald-600/20">
+          <i data-lucide="refresh-cw" class="w-6 h-6 text-slate-950 font-bold"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="text-2xl font-black tracking-tight text-white">ReLoop<span class="text-teal-400">.ai</span></span>
+            <span class="bg-teal-500/10 text-teal-400 border border-teal-500/30 text-[10px] font-mono px-2 py-0.5 rounded-full font-bold">RIDE MVP 0.1</span>
+          </div>
+          <p class="text-[11px] text-slate-400 hidden sm:block">AI Inventory Recovery & Circular Material Exchange</p>
+        </div>
+      </div>
+
+      <!-- Navigation Links -->
+      <nav class="hidden lg:flex items-center space-x-1 font-medium text-sm">
+        <button onclick="switchTab('dashboard')" id="nav-dashboard" class="px-4 py-2 rounded-lg text-teal-400 bg-teal-500/10 border border-teal-500/30 transition flex items-center space-x-2 font-bold">
+          <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+          <span>Overview</span>
+        </button>
+        <button onclick="switchTab('deadstock')" id="nav-deadstock" class="px-4 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-[#18283b] transition flex items-center space-x-2">
+          <i data-lucide="shield-alert" class="w-4 h-4"></i>
+          <span>Deadstock Risk Engine</span>
+        </button>
+        <button onclick="switchTab('material')" id="nav-material" class="px-4 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-[#18283b] transition flex items-center space-x-2">
+          <i data-lucide="scan" class="w-4 h-4"></i>
+          <span>Material Passport AI</span>
+        </button>
+        <button onclick="switchTab('buyers')" id="nav-buyers" class="px-4 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-[#18283b] transition flex items-center space-x-2">
+          <i data-lucide="users" class="w-4 h-4"></i>
+          <span>NCR Buyer Graph</span>
+        </button>
+        <button onclick="switchTab('impact')" id="nav-impact" class="px-4 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-[#18283b] transition flex items-center space-x-2">
+          <i data-lucide="leaf" class="w-4 h-4"></i>
+          <span>ESG & EPR Impact</span>
+        </button>
+      </nav>
+
+      <!-- Action Buttons (SOLID DARKEST BLUE WITH GREENISH TEAL TINT) -->
+      <div class="flex items-center space-x-3">
+        <button onclick="triggerDemoWalkthrough()" class="px-4 py-2 rounded-lg bg-teal-500/10 hover:bg-teal-500/20 text-teal-400 border border-teal-500/30 text-xs font-mono font-bold transition flex items-center space-x-2 shadow-sm">
+          <i data-lucide="play" class="w-3.5 h-3.5 fill-teal-400"></i>
+          <span>PLAY RIDE DEMO (3-MIN)</span>
+        </button>
+        <button onclick="loadSampleDataset()" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-xs transition flex items-center space-x-2 shadow-md shadow-emerald-600/20">
+          <i data-lucide="upload" class="w-4 h-4"></i>
+          <span>Upload Sheet</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+
+    <!-- VIEW 1: DASHBOARD / OVERVIEW -->
+    <div id="view-dashboard" class="space-y-10">
+      
+      <!-- HERO BANNER -->
+      <div class="relative rounded-3xl border border-[#18283b] bg-[#0d1622] p-8 sm:p-10 overflow-hidden shadow-2xl">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
+          
+          <div class="lg:col-span-7 space-y-6">
+            <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-teal-500/10 border border-teal-500/30 text-teal-400 text-xs font-mono font-medium">
+              <span class="w-2 h-2 rounded-full bg-teal-400 badge-pulse"></span>
+              <span>UNIFIED ASSET & MATERIAL VALUE RECOVERY</span>
+            </div>
+            
+            <h1 class="text-4xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight">
+              Recover maximum value from every unit your business can't sell. <br/>
+              <span class="text-teal-400">Before and after it becomes waste.</span>
+            </h1>
+            
+            <p class="text-slate-300 text-base leading-relaxed max-w-2xl">
+              ReLoop unifies <strong>Deadstock Risk Analytics</strong> and <strong>Secondary Scrap Exchange</strong> into a single intelligence engine. Predict unsellable stock, calculate Net Recovery options, and issue Material Passports for buyers in Delhi NCR.
+            </p>
+
+            <div class="flex flex-wrap items-center gap-4 pt-2">
+              <button onclick="loadSampleDataset()" class="px-6 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-extrabold text-sm shadow-lg shadow-emerald-600/20 transition flex items-center space-x-3">
+                <i data-lucide="zap" class="w-5 h-5 fill-slate-950"></i>
+                <span>Load 2,000 SKU Delhi-NCR Inventory</span>
+              </button>
+
+              <button onclick="switchTab('material')" class="px-6 py-3.5 rounded-xl bg-[#18283b] hover:bg-[#20344c] text-white font-bold text-sm border border-[#273e5a] transition flex items-center space-x-3">
+                <i data-lucide="camera" class="w-5 h-5 text-teal-400"></i>
+                <span>Scan Scrap Lot (Photo AI)</span>
+              </button>
+            </div>
+
+            <!-- Key Metric Micro-Row -->
+            <div class="grid grid-cols-3 gap-4 pt-6 border-t border-[#18283b] font-mono text-xs">
+              <div>
+                <span class="text-slate-400 block mb-1">TRAPPED CAPITAL</span>
+                <span class="text-xl font-bold text-white">₹18,45,000</span>
+              </div>
+              <div>
+                <span class="text-slate-400 block mb-1">RECOVERABLE VALUE</span>
+                <span class="text-xl font-bold text-teal-400">₹12,68,200</span>
+              </div>
+              <div>
+                <span class="text-slate-400 block mb-1">AVG RECOVERY RATE</span>
+                <span class="text-xl font-bold text-slate-200">68.7%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Hero Right Graphic / HUD -->
+          <div class="lg:col-span-5 relative">
+            <div class="relative rounded-2xl border border-[#18283b] overflow-hidden bg-[#04080e] shadow-2xl group">
+              <img src="file:///C:/Users/HP/.gemini/antigravity/brain/6dfedacc-5c71-477b-8b89-4e01dd136499/scrap_metal_scan_1791055254896.jpg" onerror="this.src='https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=1200&auto=format&fit=crop'" alt="Scrap & Component AI Telemetry" class="w-full h-80 object-cover opacity-90 group-hover:scale-105 transition duration-700">
+              <div class="scan-line"></div>
+              
+              <!-- Floating AR Telemetry Badges -->
+              <div class="absolute top-4 left-4 bg-[#060b11]/90 backdrop-blur-md border border-teal-500/40 px-3 py-2 rounded-lg text-xs font-mono text-teal-400 space-y-0.5 shadow-lg">
+                <div class="flex items-center space-x-1.5 font-bold">
+                  <i data-lucide="scan-line" class="w-3.5 h-3.5 text-teal-400 animate-pulse"></i>
+                  <span>AI SPEC: ALUMINIUM 6063</span>
+                </div>
+                <div class="text-[10px] text-slate-300">Purity: 94.8% | Est Qty: 3.2 T</div>
+              </div>
+
+              <div class="absolute bottom-4 right-4 bg-[#060b11]/90 backdrop-blur-md border border-teal-500/40 px-3 py-2 rounded-lg text-xs font-mono text-teal-400 space-y-0.5 shadow-lg">
+                <div class="flex items-center space-x-1.5 font-bold">
+                  <i data-lucide="users" class="w-3.5 h-3.5 text-teal-400"></i>
+                  <span>17 NCR BUYERS MATCHED</span>
+                </div>
+                <div class="text-[10px] text-slate-300">Nearest: Noida Sec 63 (28km)</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- KPI METRIC CARDS -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        
+        <div class="bg-[#0d1622] border border-[#18283b] rounded-2xl p-6 space-y-3 relative overflow-hidden">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono text-slate-400 uppercase tracking-wider">Total Inventory Analysed</span>
+            <div class="p-2 bg-[#18283b] rounded-lg text-teal-400">
+              <i data-lucide="package" class="w-5 h-5"></i>
+            </div>
+          </div>
+          <div class="text-3xl font-extrabold text-white font-mono">2,000 <span class="text-sm font-normal text-slate-400">SKUs</span></div>
+          <div class="text-xs text-slate-400 flex items-center space-x-1">
+            <span class="text-teal-400 font-bold">100% Parsed</span>
+            <span>via Excel Auto-Mapper</span>
+          </div>
+        </div>
+
+        <div class="bg-[#0d1622] border border-orange-500/30 rounded-2xl p-6 space-y-3 relative overflow-hidden">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono text-orange-400 uppercase tracking-wider font-bold">At-Risk & Deadstock</span>
+            <div class="p-2 bg-orange-500/10 rounded-lg text-orange-400 border border-orange-500/30">
+              <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+            </div>
+          </div>
+          <div class="text-3xl font-extrabold text-orange-400 font-mono">17 <span class="text-sm font-normal text-slate-400">SKUs</span></div>
+          <div class="text-xs text-slate-400 flex items-center space-x-1">
+            <span class="text-red-400 font-bold">🔴 High Risk (>70)</span>
+            <span>Capital Locked: ₹18.45L</span>
+          </div>
+        </div>
+
+        <div class="bg-[#0d1622] border border-teal-500/30 rounded-2xl p-6 space-y-3 relative overflow-hidden">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono text-teal-400 uppercase tracking-wider font-bold">Recoverable Capital</span>
+            <div class="p-2 bg-teal-500/10 rounded-lg text-teal-400 border border-teal-500/30">
+              <i data-lucide="arrow-up-right" class="w-5 h-5"></i>
+            </div>
+          </div>
+          <div class="text-3xl font-extrabold text-teal-400 font-mono">₹12.68 L</div>
+          <div class="text-xs text-slate-400 flex items-center space-x-1">
+            <span class="text-teal-400 font-bold">68.7% Net Recovery</span>
+            <span>across top buyers</span>
+          </div>
+        </div>
+
+        <div class="bg-[#0d1622] border border-[#18283b] rounded-2xl p-6 space-y-3 relative overflow-hidden">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono text-slate-300 uppercase tracking-wider font-bold">CO₂ & Landfill Diverted</span>
+            <div class="p-2 bg-[#18283b] rounded-lg text-teal-400">
+              <i data-lucide="leaf" class="w-5 h-5"></i>
+            </div>
+          </div>
+          <div class="text-3xl font-extrabold text-white font-mono">14.8 <span class="text-sm font-normal text-slate-400">Tonnes CO₂</span></div>
+          <div class="text-xs text-slate-400 flex items-center space-x-1">
+            <span class="text-teal-400 font-bold">3.2 Tonnes</span>
+            <span>Landfill Waste Avoided</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- PIPELINE PROCESS DIAGRAM (§5 in PRD) -->
+      <div class="bg-[#0d1622] border border-[#18283b] rounded-3xl p-8 space-y-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-xl font-bold text-white flex items-center space-x-2">
+              <i data-lucide="git-merge" class="w-5 h-5 text-teal-400"></i>
+              <span>The Unified ReLoop Pipeline</span>
+            </h2>
+            <p class="text-xs text-slate-400 font-mono mt-1">INGEST ➔ UNDERSTAND ➔ PREDICT ➔ DECIDE ➔ MATCH ➔ EXECUTE ➔ LEARN</p>
+          </div>
+          <span class="bg-[#18283b] text-slate-300 font-mono text-xs px-3 py-1 rounded-full border border-[#273e5a]">Unified Asset Model</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-7 gap-3 text-xs font-mono">
+          
+          <div class="bg-[#060b11] p-4 rounded-xl border border-[#18283b] space-y-2">
+            <div class="text-teal-400 font-bold">1. INGEST</div>
+            <p class="text-slate-400 text-[11px]">Excel, CSV, Tally, or Scrap Photo scan</p>
+          </div>
+
+          <div class="bg-[#060b11] p-4 rounded-xl border border-[#18283b] space-y-2">
+            <div class="text-teal-400 font-bold">2. CLASSIFY</div>
+            <p class="text-slate-400 text-[11px]">Item vs Material state classifier</p>
+          </div>
+
+          <div class="bg-[#060b11] p-4 rounded-xl border border-[#18283b] space-y-2">
+            <div class="text-teal-400 font-bold">3. PREDICT</div>
+            <p class="text-slate-400 text-[11px]">Deadstock Risk Score (0-100 algorithm)</p>
+          </div>
+
+          <div class="bg-[#060b11] p-4 rounded-xl border border-teal-500/40 text-teal-400 space-y-2">
+            <div class="font-bold">4. DECIDE</div>
+            <p class="text-slate-400 text-[11px]">Net Recovery strategy rank (Hold/Discount/Scrap)</p>
+          </div>
+
+          <div class="bg-[#060b11] p-4 rounded-xl border border-[#18283b] space-y-2">
+            <div class="text-teal-400 font-bold">5. MATCH</div>
+            <p class="text-slate-400 text-[11px]">Demand graph compatibility matcher</p>
+          </div>
+
+          <div class="bg-[#060b11] p-4 rounded-xl border border-[#18283b] space-y-2">
+            <div class="text-teal-400 font-bold">6. EXECUTE</div>
+            <p class="text-slate-400 text-[11px]">1-Click WhatsApp/Email offer & logistics</p>
+          </div>
+
+          <div class="bg-[#060b11] p-4 rounded-xl border border-teal-500/40 text-teal-400 space-y-2">
+            <div class="font-bold">7. LEARN</div>
+            <p class="text-slate-400 text-[11px]">Outcome data refines buyer demand graph</p>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- LIFECYCLE HANDOFF FEATURE HIGHLIGHT (§8 Flow C) -->
+      <div class="bg-[#0d1622] border border-teal-500/30 rounded-3xl p-8 space-y-6 relative overflow-hidden">
+        <div class="flex items-center space-x-3">
+          <div class="p-3 bg-teal-500/10 border border-teal-500/30 rounded-2xl text-teal-400">
+            <i data-lucide="refresh-cw" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <h3 class="text-lg font-bold text-white">Unique Feature: Automatic Lifecycle Handoff</h3>
+              <span class="bg-teal-500/20 text-teal-300 border border-teal-500/40 text-[10px] font-mono px-2 py-0.5 rounded-full font-bold">Flow C Engine</span>
+            </div>
+            <p class="text-xs text-slate-300 mt-0.5">When deadstock product resale value drops below raw material scrap value, ReLoop automatically transforms the SKU into a Material Passport lot.</p>
+          </div>
+        </div>
+
+        <!-- Handoff Flow Visualization -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+          
+          <div class="bg-[#060b11] p-5 rounded-2xl border border-[#18283b] space-y-2">
+            <span class="text-[10px] font-mono text-orange-400 font-bold uppercase">Phase A: Unsold Product</span>
+            <h4 class="font-bold text-white text-sm">Siemens 400A Heavy Duty Busbar</h4>
+            <div class="text-xs text-slate-400 space-y-1">
+              <div>Age: 210 Days | Stock: 450 Units</div>
+              <div>Original Price: ₹850/unit</div>
+              <div class="text-orange-400 font-mono font-bold">Discounted Resale Bid: ₹280/unit (Low Demand)</div>
+            </div>
+          </div>
+
+          <div class="flex flex-col items-center justify-center space-y-2 text-center">
+            <div class="p-3 bg-teal-500/10 border border-teal-500/40 rounded-full text-teal-400">
+              <i data-lucide="arrow-right" class="w-6 h-6"></i>
+            </div>
+            <span class="text-[11px] font-mono text-teal-400 font-bold">AI HANDOFF DETECTED</span>
+            <span class="text-[10px] text-slate-400">Scrap Material Net > Resale Net (+107%)</span>
+          </div>
+
+          <div class="bg-[#060b11] p-5 rounded-2xl border border-teal-500/40 space-y-2">
+            <span class="text-[10px] font-mono text-teal-400 font-bold uppercase">Phase B: Graded Copper Scrap</span>
+            <h4 class="font-bold text-white text-sm">High-Purity Copper Busbar Scrap (Grade A)</h4>
+            <div class="text-xs text-slate-400 space-y-1">
+              <div>Est Weight: 780 kg | Purity: 99.2%</div>
+              <div>Market Scrap Rate: ₹742/kg</div>
+              <div class="text-teal-400 font-mono font-bold">Scrap Net Recovery: ₹578.70/unit (17 Buyers)</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- VIEW 2: DEADSTOCK RISK ENGINE -->
+    <div id="view-deadstock" class="space-y-8 hidden">
+      
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#18283b] pb-6">
+        <div>
+          <h1 class="text-3xl font-extrabold text-white flex items-center space-x-3">
+            <i data-lucide="shield-alert" class="w-8 h-8 text-teal-400"></i>
+            <span>Deadstock Risk Engine</span>
+          </h1>
+          <p class="text-slate-400 text-sm mt-1">Multi-factor weighted statistical risk scoring (0–100) per SKU based on age, velocity, margin & regional demand.</p>
+        </div>
+
+        <div class="flex items-center space-x-3">
+          <div class="relative">
+            <input type="text" id="search-sku" oninput="filterSKUTable()" placeholder="Search SKU, name, location..." class="bg-[#0d1622] border border-[#18283b] rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-teal-500 w-64 pl-10">
+            <i data-lucide="search" class="w-4 h-4 text-slate-500 absolute left-3 top-3"></i>
+          </div>
+
+          <select id="risk-filter" onchange="filterSKUTable()" class="bg-[#0d1622] border border-[#18283b] rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-teal-500">
+            <option value="ALL">All Risk Levels (2,000 SKUs)</option>
+            <option value="HIGH" selected>🔴 High Risk (>70 Score)</option>
+            <option value="MED">🟠 At-Risk (40-70 Score)</option>
+            <option value="LOW">🟢 Healthy (<40 Score)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- SKU TABLE WITH PERFECTLY ALIGNED COLUMNS -->
+      <div class="bg-[#0d1622] border border-[#18283b] rounded-3xl overflow-hidden shadow-2xl">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead class="bg-[#04080e] text-slate-400 font-mono uppercase border-b border-[#18283b]">
+              <tr>
+                <th class="py-4 px-5 text-left">SKU Code & Asset Name</th>
+                <th class="py-4 px-4 text-left">Location</th>
+                <th class="py-4 px-3 text-center">Stock Qty</th>
+                <th class="py-4 px-4 text-right">Capital Trapped</th>
+                <th class="py-4 px-3 text-center">Age (Days)</th>
+                <!-- PERFECT ALIGNMENT RISK SCORE -->
+                <th class="py-4 px-4 text-center w-32">Risk Score</th>
+                <th class="py-4 px-5 text-left">AI Diagnostic Reason</th>
+                <!-- PERFECT ALIGNMENT TOP ACTION -->
+                <th class="py-4 px-4 text-center w-44">Top Action</th>
+                <th class="py-4 px-4 text-right">Net Recovery</th>
+                <th class="py-4 px-5 text-center">Action</th>
+              </tr>
+            </thead>
+            <tbody id="sku-table-body" class="divide-y divide-[#18283b]/60 font-medium">
+              <!-- Dynamically Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- VIEW 3: MATERIAL PASSPORT AI -->
+    <div id="view-material" class="space-y-8 hidden">
+      
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#18283b] pb-6">
+        <div>
+          <h1 class="text-3xl font-extrabold text-white flex items-center space-x-3">
+            <i data-lucide="scan" class="w-8 h-8 text-teal-400"></i>
+            <span>Material Passport & AI Scrap Scanner</span>
+          </h1>
+          <p class="text-slate-400 text-sm mt-1">Classify industrial scrap, offcuts, and e-waste into verified tradable materials with estimated alloy grade and purity.</p>
+        </div>
+
+        <div class="flex items-center space-x-3">
+          <button onclick="simulateScrapScan('aluminium')" class="px-4 py-2 rounded-xl bg-[#18283b] hover:bg-[#20344c] text-teal-400 text-xs font-mono font-bold border border-[#273e5a] transition">
+            Scan Aluminium Lot
+          </button>
+          <button onclick="simulateScrapScan('copper')" class="px-4 py-2 rounded-xl bg-[#18283b] hover:bg-[#20344c] text-teal-400 text-xs font-mono font-bold border border-[#273e5a] transition">
+            Scan Copper Lot
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- LEFT SCANNER DROPZONE -->
+        <div class="lg:col-span-5 space-y-6">
+          <div class="bg-[#0d1622] border border-[#18283b] rounded-3xl p-6 space-y-6">
+            <h3 class="text-lg font-bold text-white flex items-center space-x-2">
+              <i data-lucide="camera" class="w-5 h-5 text-teal-400"></i>
+              <span>Upload Photo or Scrap Specs</span>
+            </h3>
+
+            <!-- Dropzone -->
+            <div id="scrap-dropzone" class="border-2 border-dashed border-[#18283b] hover:border-teal-400 rounded-2xl p-8 text-center space-y-4 cursor-pointer transition bg-[#060b11] relative overflow-hidden group">
+              <div class="w-16 h-16 rounded-2xl bg-teal-500/10 border border-teal-500/30 flex items-center justify-center mx-auto text-teal-400 group-hover:scale-110 transition">
+                <i data-lucide="upload-cloud" class="w-8 h-8"></i>
+              </div>
+              <div>
+                <p class="text-sm font-bold text-white">Drag & Drop Scrap Image or Document</p>
+                <p class="text-xs text-slate-400 mt-1">Supports JPG, PNG, PDF or CSV scrap manifests</p>
+              </div>
+              <div class="pt-2">
+                <span class="px-3 py-1.5 rounded-lg bg-[#18283b] text-slate-300 font-mono text-xs border border-[#273e5a]">Click to Select File</span>
+              </div>
+            </div>
+
+            <!-- Pre-loaded Samples -->
+            <div class="space-y-3">
+              <span class="text-xs font-mono text-slate-400 uppercase tracking-wider block">Or Try Preset Industrial Lots:</span>
+              <div class="grid grid-cols-2 gap-3">
+                <button onclick="simulateScrapScan('aluminium')" class="p-3 rounded-xl bg-[#060b11] border border-[#18283b] hover:border-teal-400 text-left space-y-1 transition group">
+                  <div class="text-xs font-bold text-white group-hover:text-teal-400">Aluminium 6063 Scrap</div>
+                  <div class="text-[10px] text-slate-400 font-mono">3.2 Tonnes | Extrusions</div>
+                </button>
+
+                <button onclick="simulateScrapScan('copper')" class="p-3 rounded-xl bg-[#060b11] border border-[#18283b] hover:border-teal-400 text-left space-y-1 transition group">
+                  <div class="text-xs font-bold text-white group-hover:text-teal-400">Heavy Copper Wire Scrap</div>
+                  <div class="text-[10px] text-slate-400 font-mono">1.85 Tonnes | 99.8% Purity</div>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT GENERATED MATERIAL PASSPORT CARD -->
+        <div class="lg:col-span-7">
+          <div id="passport-card-container" class="bg-[#0d1622] border border-teal-500/40 rounded-3xl p-8 space-y-6 relative overflow-hidden shadow-2xl">
+            
+            <div class="flex items-center justify-between border-b border-[#18283b] pb-4">
+              <div class="space-y-1">
+                <div class="flex items-center space-x-3">
+                  <span class="bg-teal-500/20 text-teal-400 border border-teal-500/40 text-xs font-mono font-bold px-3 py-1 rounded-full">VERIFIED MATERIAL PASSPORT</span>
+                  <span class="text-slate-400 text-xs font-mono" id="passport-id">ID: MP-2026-8819-NCR</span>
+                </div>
+                <h2 class="text-2xl font-black text-white" id="passport-title">Aluminium Alloy 6063 Industrial Scrap</h2>
+              </div>
+              
+              <div class="text-right font-mono">
+                <span class="text-slate-400 text-xs block">AI CONFIDENCE SCORE</span>
+                <span class="text-2xl font-bold text-teal-400" id="passport-confidence">94.8%</span>
+              </div>
+            </div>
+
+            <!-- Grid Specs -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 font-mono text-xs">
+              <div class="bg-[#060b11] p-4 rounded-xl border border-[#18283b]">
+                <span class="text-slate-400 block mb-1">MATERIAL GRADE</span>
+                <strong class="text-white text-sm" id="passport-grade">6063 Architectural</strong>
+              </div>
+              <div class="bg-[#060b11] p-4 rounded-xl border border-[#18283b]">
+                <span class="text-slate-400 block mb-1">QUANTITY</span>
+                <strong class="text-teal-400 text-sm" id="passport-qty">3,200 kg (3.2 T)</strong>
+              </div>
+              <div class="bg-[#060b11] p-4 rounded-xl border border-[#18283b]">
+                <span class="text-slate-400 block mb-1">EST. PURITY</span>
+                <strong class="text-teal-400 text-sm" id="passport-purity">98.2% Clean</strong>
+              </div>
+              <div class="bg-[#060b11] p-4 rounded-xl border border-[#18283b]">
+                <span class="text-slate-400 block mb-1">LOCATION</span>
+                <strong class="text-white text-sm" id="passport-loc">Okhla Ind. Area</strong>
+              </div>
+            </div>
+
+            <!-- Financials & Logistics Breakdown -->
+            <div class="bg-[#060b11] p-6 rounded-2xl border border-[#18283b] space-y-4">
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-slate-300 font-bold">LME Reference Market Rate:</span>
+                <span class="font-mono text-slate-200">₹198.50 / kg</span>
+              </div>
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-slate-300 font-bold">Gross Material Lot Value:</span>
+                <span class="font-mono text-teal-300 font-bold text-base" id="passport-gross">₹6,35,200</span>
+              </div>
+              <div class="flex items-center justify-between text-xs text-slate-400 border-t border-[#18283b] pt-3">
+                <span>Est. Logistics & Freight (Noida Smelter, 28km):</span>
+                <span class="font-mono text-orange-400">- ₹14,500</span>
+              </div>
+              <div class="flex items-center justify-between text-base border-t border-[#18283b] pt-3">
+                <span class="font-extrabold text-white">Net Value Recovery:</span>
+                <span class="font-mono font-extrabold text-teal-400 text-xl" id="passport-net">₹6,20,700</span>
+              </div>
+            </div>
+
+            <!-- Top Matched Buyers -->
+            <div class="space-y-3">
+              <h4 class="text-xs font-mono text-slate-400 uppercase tracking-wider">Top Matched Industrial Buyer Nodes (Ranked):</h4>
+              <div class="space-y-2 text-xs" id="passport-buyers-list">
+                <!-- Javascript dynamic buyers -->
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between border-t border-[#18283b] pt-6">
+              <button onclick="alert('Passport PDF Link copied to clipboard!')" class="px-4 py-2.5 rounded-xl bg-[#18283b] hover:bg-[#20344c] text-white text-xs font-mono font-bold transition flex items-center space-x-2 border border-[#273e5a]">
+                <i data-lucide="share-2" class="w-4 h-4 text-teal-400"></i>
+                <span>Share Passport Link</span>
+              </button>
+              <button onclick="switchTab('buyers')" class="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-xs shadow-lg shadow-emerald-600/20 transition flex items-center space-x-2">
+                <i data-lucide="send" class="w-4 h-4"></i>
+                <span>Broadcast Offers to Top Buyers</span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- VIEW 4: NCR BUYER DEMAND GRAPH -->
+    <div id="view-buyers" class="space-y-8 hidden">
+      
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#18283b] pb-6">
+        <div>
+          <h1 class="text-3xl font-extrabold text-white flex items-center space-x-3">
+            <i data-lucide="users" class="w-8 h-8 text-teal-400"></i>
+            <span>Delhi NCR Buyer Demand Graph</span>
+          </h1>
+          <p class="text-slate-400 text-sm mt-1">48 Seeded & Verified Industrial Buyers across Delhi, Noida, Gurugram, Meerut, and Faridabad.</p>
+        </div>
+
+        <div class="flex items-center space-x-3">
+          <span class="bg-teal-500/10 text-teal-400 border border-teal-500/30 text-xs font-mono font-bold px-3 py-1.5 rounded-xl">
+            Live Radius: 100km NCR Belt
+          </span>
+        </div>
+      </div>
+
+      <!-- NCR NETWORK TELEMETRY MAP BANNER -->
+      <div class="relative rounded-3xl border border-[#18283b] bg-[#0d1622] overflow-hidden shadow-2xl group">
+        <img src="file:///C:/Users/HP/.gemini/antigravity/brain/6dfedacc-5c71-477b-8b89-4e01dd136499/reloop_dashboard_preview_1791055349742.jpg" onerror="this.src='https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=1200&auto=format&fit=crop'" alt="NCR Material Flow Telemetry Map" class="w-full h-72 object-cover opacity-90 group-hover:scale-102 transition duration-700">
+        <div class="absolute inset-0 bg-[#060b11]/30"></div>
+        <div class="absolute bottom-6 left-6 right-6 flex items-center justify-between">
+          <div class="space-y-1">
+            <div class="flex items-center space-x-2 text-teal-400 font-mono text-xs font-bold">
+              <span class="w-2 h-2 rounded-full bg-teal-400 animate-ping"></span>
+              <span>LIVE INDUSTRIAL MATERIAL FLOW NODES</span>
+            </div>
+            <p class="text-xs text-slate-300">Okhla Recycling Hub leftrightarrow Noida Manufacturing Belt leftrightarrow Gurugram Material Flow</p>
+          </div>
+          <span class="bg-[#09101a]/90 text-teal-400 border border-teal-500/40 text-xs font-mono px-3 py-1.5 rounded-xl font-bold backdrop-blur-md">
+            48 Active Nodes Connected
+          </span>
+        </div>
+      </div>
+
+      <!-- BUYER CARDS GRID -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="buyer-cards-grid">
+        <!-- Dynamically Populated by JS -->
+      </div>
+
+    </div>
+
+    <!-- VIEW 5: ESG & EPR IMPACT LAB -->
+    <div id="view-impact" class="space-y-8 hidden">
+      
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#18283b] pb-6">
+        <div>
+          <h1 class="text-3xl font-extrabold text-white flex items-center space-x-3">
+            <i data-lucide="leaf" class="w-8 h-8 text-teal-400"></i>
+            <span>ESG & EPR Impact Intelligence</span>
+          </h1>
+          <p class="text-slate-400 text-sm mt-1">Documented carbon avoidance math and landfill diversion metrics for EPR compliance reporting.</p>
+        </div>
+
+        <button onclick="downloadEPRReport()" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-xs shadow-lg shadow-emerald-600/30 transition flex items-center space-x-2">
+          <i data-lucide="file-text" class="w-4 h-4"></i>
+          <span>Export EPR Compliance Report</span>
+        </button>
+      </div>
+
+      <!-- Impact Metrics Header Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        <div class="bg-[#0d1622] border border-teal-500/30 rounded-3xl p-6 space-y-4">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono text-teal-400 font-bold uppercase">CO₂ Avoided</span>
+            <i data-lucide="cloud-off" class="w-6 h-6 text-teal-400"></i>
+          </div>
+          <div class="text-4xl font-extrabold text-white font-mono">14.82 <span class="text-sm font-normal text-slate-400">MT CO₂e</span></div>
+          <p class="text-xs text-slate-300">Equivalent to planting <strong>675 mature trees</strong> or taking 3.2 petrol cars off the road for a year.</p>
+        </div>
+
+        <div class="bg-[#0d1622] border border-[#18283b] rounded-3xl p-6 space-y-4">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono text-slate-300 font-bold uppercase">Landfill Diverted</span>
+            <i data-lucide="trash-2" class="w-6 h-6 text-teal-400"></i>
+          </div>
+          <div class="text-4xl font-extrabold text-white font-mono">3.20 <span class="text-sm font-normal text-slate-400">Tonnes</span></div>
+          <p class="text-xs text-slate-300">100% of scrap diverted from unauthorized dumping grounds to registered eco-smelters.</p>
+        </div>
+
+        <div class="bg-[#0d1622] border border-[#18283b] rounded-3xl p-6 space-y-4">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono text-slate-300 font-bold uppercase">ReLoop Circularity Score</span>
+            <i data-lucide="award" class="w-6 h-6 text-teal-400"></i>
+          </div>
+          <div class="text-4xl font-extrabold text-white font-mono">82 / 100</div>
+          <p class="text-xs text-slate-300">Top 5% among SME Electrical Distributors in the Delhi-NCR Belt.</p>
+        </div>
+
+      </div>
+
+      <!-- Formula & Cited Sources Box (§10 in PRD) -->
+      <div class="bg-[#0d1622] border border-[#18283b] rounded-3xl p-8 space-y-6">
+        <h3 class="text-lg font-bold text-white flex items-center space-x-2">
+          <i data-lucide="calculator" class="w-5 h-5 text-teal-400"></i>
+          <span>Documented Emissions Avoidance Methodology</span>
+        </h3>
+
+        <div class="bg-[#060b11] p-6 rounded-2xl border border-[#18283b] space-y-4 font-mono text-xs">
+          <div class="text-teal-400 font-bold">CO₂ Avoided = Tonnes Recovered × (Virgin Emission Factor − Recycled Emission Factor)</div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-slate-300 border-t border-[#18283b] pt-4">
+            <div>
+              <strong class="text-white block mb-1">Aluminium 6063 Factor:</strong>
+              Virgin Smelting: <span class="text-orange-400">11.5 kg CO₂ / kg</span><br/>
+              Recycled Secondary Smelting: <span class="text-teal-400">0.5 kg CO₂ / kg</span><br/>
+              <span class="text-teal-400 font-bold">Net Saved: 11.0 kg CO₂ / kg (95.6% reduction)</span>
+            </div>
+            <div>
+              <strong class="text-white block mb-1">Heavy Copper Scrap Factor:</strong>
+              Virgin Mining & Refining: <span class="text-orange-400">4.8 kg CO₂ / kg</span><br/>
+              Recycled Remelting: <span class="text-teal-400">0.7 kg CO₂ / kg</span><br/>
+              <span class="text-teal-400 font-bold">Net Saved: 4.1 kg CO₂ / kg (85.4% reduction)</span>
+            </div>
+          </div>
+
+          <div class="text-[11px] text-slate-500 border-t border-[#18283b] pt-3">
+            * CITED SOURCES: International Aluminium Institute (IAI) 2024 Lifecycle Report & International Copper Association (ICA) Decarbonization Roadmap.
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- SKU RECOVERY PLAN MODAL -->
+  <div id="sku-modal" class="fixed inset-0 bg-[#04080e]/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-[#0d1622] border border-[#18283b] rounded-3xl max-w-3xl w-full p-8 space-y-6 max-h-[90vh] overflow-y-auto shadow-2xl relative">
+      
+      <button onclick="closeSKUModal()" class="absolute top-6 right-6 p-2 rounded-xl bg-[#18283b] text-slate-400 hover:text-white transition">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <div class="space-y-1">
+        <div class="flex items-center space-x-3">
+          <span id="modal-risk-badge" class="px-3 py-1 rounded-full text-xs font-mono font-bold bg-red-500/20 text-red-400 border border-red-500/30">🔴 HIGH RISK (87/100)</span>
+          <span id="modal-sku-code" class="text-slate-400 font-mono text-xs">SKU-DEL-8921</span>
+        </div>
+        <h2 id="modal-sku-title" class="text-2xl font-bold text-white">Schneider Electric 3-Phase Contactor 40A</h2>
+        <p id="modal-sku-diag" class="text-xs text-slate-300">Diagnostic: 184 days in Okhla warehouse, sales down 88% MoM, capital locked: ₹4,85,000</p>
+      </div>
+
+      <!-- What-If Discount Slider -->
+      <div class="bg-[#060b11] p-6 rounded-2xl border border-[#18283b] space-y-4">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-mono font-bold text-teal-400">WHAT-IF DISCOUNT RECOVERY SLIDER</span>
+          <span class="text-xs font-mono font-bold text-white" id="slider-discount-val">30% Discount</span>
+        </div>
+        <input type="range" id="discount-slider" min="0" max="50" value="30" oninput="updateDiscountSlider()" class="w-full h-2 bg-[#18283b] rounded-lg appearance-none cursor-pointer accent-teal-400">
+        
+        <div class="grid grid-cols-3 gap-4 text-center font-mono text-xs pt-2">
+          <div>
+            <span class="text-slate-400 block mb-1">Expected Price</span>
+            <span class="text-white font-bold" id="modal-exp-price">₹1,400 / unit</span>
+          </div>
+          <div>
+            <span class="text-slate-400 block mb-1">Buyer Pool Size</span>
+            <span class="text-teal-400 font-bold text-sm" id="modal-buyer-count">8 Matched Buyers</span>
+          </div>
+          <div>
+            <span class="text-slate-400 block mb-1">Net Recovery (₹)</span>
+            <span class="text-teal-400 font-extrabold text-base" id="modal-net-recovery">₹3,39,500</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Buyers List for SKU -->
+      <div class="space-y-3">
+        <h4 class="text-xs font-mono text-slate-400 uppercase tracking-wider">Top Compatible Buyers Ranked by Net Recovery:</h4>
+        <div id="modal-buyers-list" class="space-y-2 text-xs">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between border-t border-[#18283b] pt-6">
+        <button onclick="closeSKUModal()" class="px-4 py-2.5 rounded-xl bg-[#18283b] text-slate-300 text-xs font-bold hover:text-white transition">Close</button>
+        <button onclick="sendOfferFromModal()" class="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-xs shadow-lg shadow-emerald-600/20 transition flex items-center space-x-2">
+          <i data-lucide="send" class="w-4 h-4"></i>
+          <span>Send Offer via WhatsApp / Email</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- FLOATING GUIDED DEMO WIDGET (RIDE 3-MIN SCRIPT) -->
+  <div id="demo-floating-widget" class="fixed bottom-6 right-6 bg-[#0d1622] border border-teal-500/40 p-5 rounded-2xl shadow-2xl backdrop-blur-xl max-w-sm w-full z-40 space-y-3 hidden">
+    <div class="flex items-center justify-between border-b border-[#18283b] pb-2">
+      <div class="flex items-center space-x-2 text-teal-400 font-mono text-xs font-bold">
+        <i data-lucide="play-circle" class="w-4 h-4"></i>
+        <span>RIDE DEMO SCRIPT</span>
+      </div>
+      <span class="text-[10px] font-mono text-slate-400" id="demo-step-num">Step 1 of 5</span>
+    </div>
+
+    <p id="demo-step-text" class="text-xs text-slate-200 leading-relaxed font-medium">
+      Click "Load 2,000 SKU Dataset" to simulate ingesting an SME distributor sheet in under 2 minutes.
+    </p>
+
+    <div class="flex items-center justify-between pt-1">
+      <button onclick="endDemo()" class="text-[10px] text-slate-400 hover:text-slate-200">Exit Demo</button>
+      <button onclick="nextDemoStep()" class="px-3 py-1.5 rounded-lg bg-emerald-600 text-slate-950 font-bold text-xs hover:bg-emerald-500 transition flex items-center space-x-1">
+        <span>Next Step</span>
+        <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT APPLICATION LOGIC -->
+  <script>
+    lucide.createIcons();
+
+    const sampleSKUs = [
+      {
+        code: "SKU-DEL-8921",
+        name: "Schneider Electric 3-Phase Contactor 40A",
+        category: "Electrical Component",
+        location: "Okhla Phase III",
+        stock: 350,
+        unitCost: 2000,
+        sellingPrice: 2800,
+        age: 184,
+        riskScore: 87,
+        riskCategory: "HIGH",
+        reason: "184 days aging in Okhla, sales down 88% MoM, capital locked: ₹7,00,000",
+        topAction: "Discount & Resell B2B",
+        netRecovery: 588000,
+        buyers: [
+          { name: "Gurugram Electronics Liquidators", distance: "24 km", bidPrice: 1850, net: 588000 },
+          { name: "Noida Industrial Spares", distance: "18 km", bidPrice: 1720, net: 546000 }
+        ]
+      },
+      {
+        code: "SKU-DEL-4021",
+        name: "Havells Industrial Circuit Breaker 100A",
+        category: "Switchgear",
+        location: "Noida Sector 63",
+        stock: 220,
+        unitCost: 3500,
+        sellingPrice: 4800,
+        age: 195,
+        riskScore: 92,
+        riskCategory: "HIGH",
+        reason: "Zero sales in last 120 days, model superseded by 125A series",
+        topAction: "Bulk Liquidate",
+        netRecovery: 616000,
+        buyers: [
+          { name: "Faridabad Electrical Surplus Hub", distance: "32 km", bidPrice: 3100, net: 616000 }
+        ]
+      },
+      {
+        code: "SKU-BUS-402",
+        name: "Siemens Heavy Duty Copper Busbar Assembly",
+        category: "Metal Component",
+        location: "Okhla Phase I",
+        stock: 450,
+        unitCost: 650,
+        sellingPrice: 850,
+        age: 210,
+        riskScore: 94,
+        riskCategory: "HIGH",
+        reason: "Secondary product demand stagnant (₹280 bid). Scrap copper value yields higher recovery!",
+        topAction: "Convert to Copper Scrap",
+        netRecovery: 260415,
+        buyers: [
+          { name: "Okhla Eco-Recyclers & Smelters", distance: "6 km", bidPrice: 580, net: 260415 }
+        ]
+      },
+      {
+        code: "SKU-DEL-1092",
+        name: "Polycab 4-Core Armoured Copper Cable (100m Roll)",
+        category: "Electrical Cable",
+        location: "Meerut Industrial Area",
+        stock: 45,
+        unitCost: 12000,
+        sellingPrice: 16500,
+        age: 140,
+        riskScore: 65,
+        riskCategory: "MED",
+        reason: "Slowing sales velocity in Meerut. High demand in Gurugram construction hub.",
+        topAction: "Move to Gurugram Branch",
+        netRecovery: 685000,
+        buyers: [
+          { name: "Gurugram Infrastructure Supply Co", distance: "68 km", bidPrice: 15800, net: 685000 }
+        ]
+      },
+      {
+        code: "SKU-ALU-6063",
+        name: "Architectural Aluminium 6063 Extrusion Scrap Lot",
+        category: "Metal Scrap",
+        location: "Noida Sector 58",
+        stock: 3200,
+        unitCost: 160,
+        sellingPrice: 198,
+        age: 45,
+        riskScore: 25,
+        riskCategory: "LOW",
+        reason: "Clean factory offcut scrap lot. Ready for eco-smelter dispatch.",
+        topAction: "Sell as Material Passport Lot",
+        netRecovery: 620700,
+        buyers: [
+          { name: "Noida Metals & Alloy Processing", distance: "14 km", bidPrice: 198.50, net: 620700 }
+        ]
+      }
+    ];
+
+    const seededBuyers = [
+      { name: "Noida Metals & Alloy Processing", location: "Noida Sector 63 (14km)", category: "Aluminium & Copper Scrap", capacity: "50 T/mo", score: "98% Match" },
+      { name: "Okhla Eco-Recyclers & Smelters", location: "Okhla Industrial Area (6km)", category: "E-Waste & Heavy Metal", capacity: "20 T/mo", score: "96% Match" },
+      { name: "Gurugram Electronics Liquidators", location: "Gurugram Phase 4 (24km)", category: "Industrial Electrical Stock", capacity: "₹25L/mo", score: "94% Match" },
+      { name: "Meerut Cable & Wire Works", location: "Meerut Industrial Area (58km)", category: "Armoured Cables & Scrap", capacity: "15 T/mo", score: "91% Match" },
+      { name: "Faridabad Surplus Spares Hub", location: "Faridabad Sector 24 (32km)", category: "Switchgear & Relays", capacity: "₹40L/mo", score: "89% Match" },
+      { name: "Delhi Secondary Metal Trading Co", location: "Mayapuri Ind Area (18km)", category: "Ferrous & Non-Ferrous Scrap", capacity: "100 T/mo", score: "87% Match" }
+    ];
+
+    function switchTab(tabName) {
+      const tabs = ['dashboard', 'deadstock', 'material', 'buyers', 'impact'];
+      tabs.forEach(tab => {
+        const view = document.getElementById(`view-${tab}`);
+        const navBtn = document.getElementById(`nav-${tab}`);
+        if (tab === tabName) {
+          view.classList.remove('hidden');
+          if (navBtn) {
+            navBtn.className = "px-4 py-2 rounded-lg text-teal-400 bg-teal-500/10 border border-teal-500/30 transition flex items-center space-x-2 font-bold";
+          }
+        } else {
+          view.classList.add('hidden');
+          if (navBtn) {
+            navBtn.className = "px-4 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-[#18283b] transition flex items-center space-x-2";
+          }
+        }
+      });
+    }
+
+    function populateSKUTable(items) {
+      const tbody = document.getElementById('sku-table-body');
+      tbody.innerHTML = '';
+
+      items.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-[#18283b]/40 transition border-b border-[#18283b]/60";
+
+        let riskBadge = '';
+        if (item.riskCategory === 'HIGH') {
+          riskBadge = `<span class="inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-mono font-bold bg-red-500/10 text-red-400 border border-red-500/30 w-24 text-center">🔴 ${item.riskScore}/100</span>`;
+        } else if (item.riskCategory === 'MED') {
+          riskBadge = `<span class="inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-mono font-bold bg-orange-500/10 text-orange-400 border border-orange-500/30 w-24 text-center">🟠 ${item.riskScore}/100</span>`;
+        } else {
+          riskBadge = `<span class="inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-mono font-bold bg-teal-500/10 text-teal-400 border border-teal-500/30 w-24 text-center">🟢 ${item.riskScore}/100</span>`;
+        }
+
+        const trappedVal = (item.stock * item.unitCost).toLocaleString('en-IN');
+        const netRec = item.netRecovery.toLocaleString('en-IN');
+
+        tr.innerHTML = `
+          <td class="py-4 px-5 text-left">
+            <div class="font-bold text-white">${item.name}</div>
+            <div class="text-[10px] font-mono text-slate-400">${item.code} | ${item.category}</div>
+          </td>
+          <td class="py-4 px-4 text-left text-slate-300 font-mono text-[11px]">${item.location}</td>
+          <td class="py-4 px-3 text-center font-mono font-bold text-white">${item.stock}</td>
+          <td class="py-4 px-4 text-right font-mono text-slate-200">₹${trappedVal}</td>
+          <td class="py-4 px-3 text-center font-mono text-orange-400 font-bold">${item.age}d</td>
+          <!-- PERFECT ALIGNMENT RISK SCORE -->
+          <td class="py-4 px-4 text-center w-32 align-middle">${riskBadge}</td>
+          <td class="py-4 px-5 text-left text-slate-300 text-[11px] max-w-xs">${item.reason}</td>
+          <!-- PERFECT ALIGNMENT TOP ACTION -->
+          <td class="py-4 px-4 text-center w-44 align-middle">
+            <span class="inline-flex items-center justify-center px-3 py-1.5 rounded-lg bg-[#18283b] border border-[#273e5a] text-teal-300 text-[10px] font-mono font-bold w-40 text-center whitespace-nowrap shadow-sm">${item.topAction}</span>
+          </td>
+          <td class="py-4 px-4 text-right font-mono font-bold text-teal-400 text-sm">₹${netRec}</td>
+          <td class="py-4 px-5 text-center align-middle">
+            <button onclick="openSKUModal('${item.code}')" class="px-3 py-1.5 rounded-lg bg-teal-500/10 hover:bg-teal-500/20 text-teal-400 border border-teal-500/30 font-bold text-[11px] transition shadow-sm">
+              View Plan
+            </button>
+          </td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    function populateBuyersGrid() {
+      const container = document.getElementById('buyer-cards-grid');
+      container.innerHTML = '';
+
+      seededBuyers.forEach(b => {
+        const card = document.createElement('div');
+        card.className = "bg-[#0d1622] border border-[#18283b] hover:border-teal-500/40 rounded-3xl p-6 space-y-4 transition group";
+        card.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="px-2.5 py-1 rounded-full bg-teal-500/10 text-teal-400 border border-teal-500/30 text-[10px] font-mono font-bold">${b.score}</span>
+            <span class="text-slate-400 text-xs font-mono">${b.capacity}</span>
+          </div>
+          <div>
+            <h3 class="font-bold text-white text-base group-hover:text-teal-400 transition">${b.name}</h3>
+            <p class="text-xs text-slate-400 mt-1">${b.location}</p>
+          </div>
+          <div class="bg-[#060b11] p-3 rounded-xl border border-[#18283b] text-xs font-mono text-slate-300">
+            Category: <strong class="text-white">${b.category}</strong>
+          </div>
+          <div class="flex items-center justify-between pt-2">
+            <span class="text-[10px] text-teal-400 font-mono">Verified GST & KYC</span>
+            <button onclick="alert('Sent B2B inquiry to ${b.name}')" class="px-3 py-1.5 rounded-lg bg-[#18283b] hover:bg-[#20344c] text-white font-bold text-xs transition">
+              Send Offer
+            </button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function filterSKUTable() {
+      const search = document.getElementById('search-sku').value.toLowerCase();
+      const riskFilter = document.getElementById('risk-filter').value;
+
+      const filtered = sampleSKUs.filter(item => {
+        const matchesSearch = item.name.toLowerCase().includes(search) || item.code.toLowerCase().includes(search) || item.location.toLowerCase().includes(search);
+        const matchesRisk = riskFilter === 'ALL' || item.riskCategory === riskFilter;
+        return matchesSearch && matchesRisk;
+      });
+
+      populateSKUTable(filtered);
+    }
+
+    let activeSKU = null;
+    function openSKUModal(skuCode) {
+      activeSKU = sampleSKUs.find(s => s.code === skuCode) || sampleSKUs[0];
+      
+      document.getElementById('modal-sku-code').innerText = activeSKU.code;
+      document.getElementById('modal-sku-title').innerText = activeSKU.name;
+      document.getElementById('modal-sku-diag').innerText = activeSKU.reason;
+      
+      document.getElementById('discount-slider').value = 30;
+      updateDiscountSlider();
+
+      document.getElementById('sku-modal').classList.remove('hidden');
+    }
+
+    function closeSKUModal() {
+      document.getElementById('sku-modal').classList.add('hidden');
+    }
+
+    function updateDiscountSlider() {
+      if (!activeSKU) return;
+      const val = document.getElementById('discount-slider').value;
+      document.getElementById('slider-discount-val').innerText = `${val}% Discount`;
+      
+      const discountedPrice = Math.round(activeSKU.sellingPrice * (1 - val / 100));
+      document.getElementById('modal-exp-price').innerText = `₹${discountedPrice.toLocaleString()} / unit`;
+
+      const netRec = Math.round(activeSKU.stock * discountedPrice * 0.94);
+      document.getElementById('modal-net-recovery').innerText = `₹${netRec.toLocaleString()}`;
+
+      const buyerCount = val > 20 ? 8 : (val > 10 ? 4 : 2);
+      document.getElementById('modal-buyer-count').innerText = `${buyerCount} Matched Buyers`;
+
+      const buyersList = document.getElementById('modal-buyers-list');
+      buyersList.innerHTML = `
+        <div class="bg-[#060b11] p-3 rounded-xl border border-[#18283b] flex items-center justify-between">
+          <div>
+            <strong class="text-white font-bold">${activeSKU.buyers[0]?.name || 'Gurugram Electronics Liquidators'}</strong>
+            <div class="text-slate-400 font-mono text-[10px]">Distance: ${activeSKU.buyers[0]?.distance || '24 km'}</div>
+          </div>
+          <div class="text-right">
+            <div class="text-teal-400 font-mono font-bold">₹${netRec.toLocaleString()} Net</div>
+            <span class="text-[10px] text-slate-400">98% Compatibility</span>
+          </div>
+        </div>
+      `;
+    }
+
+    function sendOfferFromModal() {
+      alert(`B2B Offer broadcasted via WhatsApp & Email to ${activeSKU.buyers.length} matched buyers for ${activeSKU.code}!`);
+      closeSKUModal();
+    }
+
+    function simulateScrapScan(type) {
+      switchTab('material');
+      const title = document.getElementById('passport-title');
+      const id = document.getElementById('passport-id');
+      const grade = document.getElementById('passport-grade');
+      const qty = document.getElementById('passport-qty');
+      const purity = document.getElementById('passport-purity');
+      const gross = document.getElementById('passport-gross');
+      const net = document.getElementById('passport-net');
+      const buyersList = document.getElementById('passport-buyers-list');
+
+      if (type === 'copper') {
+        id.innerText = "ID: MP-2026-9902-NCR";
+        title.innerText = "Heavy Shredded Copper Cable Scrap";
+        grade.innerText = "Millberry Copper 99.8%";
+        qty.innerText = "1,850 kg (1.85 T)";
+        purity.innerText = "99.8% Heavy Grade";
+        gross.innerText = "₹13,72,700";
+        net.innerText = "₹13,54,200";
+
+        buyersList.innerHTML = `
+          <div class="bg-[#060b11] p-3 rounded-xl border border-[#18283b] flex items-center justify-between">
+            <div>
+              <strong class="text-white font-bold">Meerut Cable & Wire Works</strong>
+              <div class="text-slate-400 font-mono text-[10px]">Freight Est: ₹18,500 (58km)</div>
+            </div>
+            <div class="text-right font-mono">
+              <span class="text-teal-400 font-bold">₹742 / kg</span>
+            </div>
+          </div>
+        `;
+      } else {
+        id.innerText = "ID: MP-2026-8819-NCR";
+        title.innerText = "Aluminium Alloy 6063 Industrial Scrap";
+        grade.innerText = "6063 Architectural";
+        qty.innerText = "3,200 kg (3.2 T)";
+        purity.innerText = "98.2% Clean";
+        gross.innerText = "₹6,35,200";
+        net.innerText = "₹6,20,700";
+
+        buyersList.innerHTML = `
+          <div class="bg-[#060b11] p-3 rounded-xl border border-[#18283b] flex items-center justify-between">
+            <div>
+              <strong class="text-white font-bold">Noida Metals & Alloy Processing</strong>
+              <div class="text-slate-400 font-mono text-[10px]">Freight Est: ₹14,500 (28km)</div>
+            </div>
+            <div class="text-right font-mono">
+              <span class="text-teal-400 font-bold">₹198.50 / kg</span>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    function loadSampleDataset() {
+      switchTab('deadstock');
+      filterSKUTable();
+      alert('Loaded 2,000 SKU Delhi-NCR Inventory Dataset! 17 High-Risk SKUs identified.');
+    }
+
+    function downloadEPRReport() {
+      alert('Generating EPR-Ready Certificate PDF... Diverted 3.2 T landfill waste, 14.8 MT CO₂ avoided.');
+    }
+
+    let demoStep = 1;
+    function triggerDemoWalkthrough() {
+      demoStep = 1;
+      document.getElementById('demo-floating-widget').classList.remove('hidden');
+      updateDemoStepUI();
+    }
+
+    function endDemo() {
+      document.getElementById('demo-floating-widget').classList.add('hidden');
+    }
+
+    function nextDemoStep() {
+      demoStep++;
+      if (demoStep > 5) {
+        endDemo();
+        alert('RIDE MVP Demo complete! ReLoop recovers maximum value before and after inventory becomes waste.');
+        return;
+      }
+      updateDemoStepUI();
+    }
+
+    function updateDemoStepUI() {
+      const numLabel = document.getElementById('demo-step-num');
+      const textLabel = document.getElementById('demo-step-text');
+      numLabel.innerText = `Step ${demoStep} of 5`;
+
+      if (demoStep === 1) {
+        switchTab('dashboard');
+        textLabel.innerHTML = `<strong>Step 1 (Ingestion):</strong> Upload an SME inventory sheet or load our 2,000 SKU Delhi-NCR sample dataset.`;
+      } else if (demoStep === 2) {
+        switchTab('deadstock');
+        filterSKUTable();
+        textLabel.innerHTML = `<strong>Step 2 (Risk Engine):</strong> ReLoop flags <strong>₹18.45 Lakhs trapped capital</strong> across 17 high-risk SKUs using statistical scoring.`;
+      } else if (demoStep === 3) {
+        openSKUModal('SKU-DEL-8921');
+        textLabel.innerHTML = `<strong>Step 3 (Recovery Plan):</strong> Inspect recommended strategy (Discount & Resell B2B) and adjust What-If slider to maximize net recovery.`;
+      } else if (demoStep === 4) {
+        closeSKUModal();
+        simulateScrapScan('aluminium');
+        textLabel.innerHTML = `<strong>Step 4 (Material Passport):</strong> Photo AI scans scrap aluminum, generates an EPR Material Passport, and ranks 17 nearby buyers.`;
+      } else if (demoStep === 5) {
+        switchTab('impact');
+        textLabel.innerHTML = `<strong>Step 5 (ESG Impact):</strong> View documented CO₂ emissions avoided (14.8 MT) and export EPR compliance reports.`;
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      populateSKUTable(sampleSKUs);
+      populateBuyersGrid();
+    });
+  </script>
+</body>
+</html>
